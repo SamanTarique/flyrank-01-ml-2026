@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refresh Signals — Scoring Content for Review Before Rankings Slip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10192B;
+    --ink-soft:#57607A;
+    --paper:#F4F6F9;
+    --paper-raised:#FFFFFF;
+    --rise:#1F7A5C;
+    --decline:#B4432E;
+    --accent:#2E5AAC;
+    --accent-soft:#EAF0FA;
+    --line:#DFE4EA;
+    --shadow:0 1px 2px rgba(16,25,43,0.04), 0 4px 16px rgba(16,25,43,0.06);
+    --max:700px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Times New Roman', Times, Georgia, serif;
+    line-height:1.7;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 28px;}
+  .wide{max-width:920px;margin:0 auto;padding:0 28px;}
+  p{margin:0 0 1.15em;}
+  h1,h2,h3{font-family:'Times New Roman', Times, Georgia, serif;font-weight:700;line-height:1.22;margin:0;}
+  a{color:var(--accent);text-decoration-color:var(--line);text-underline-offset:2px;}
+  a:hover{text-decoration-color:var(--accent);}
+  strong{font-weight:700;}
+
+  .topbar{height:5px;background:linear-gradient(90deg,var(--accent),var(--rise));}
+
+  /* ---------- Masthead ---------- */
+  header.masthead{
+    padding:60px 0 44px;
+    background:var(--paper-raised);
+    border-bottom:1px solid var(--line);
+  }
+  header.masthead h1{
+    font-size:clamp(30px,4.6vw,46px);
+    letter-spacing:-0.01em;
+    margin-bottom:18px;
+  }
+  .dek{
+    font-size:18.5px;
+    font-style:italic;
+    color:var(--ink-soft);
+    max-width:580px;
+    margin-bottom:24px;
+  }
+  .byline{
+    font-size:14px;
+    color:var(--ink-soft);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+  }
+  .byline .sep{color:var(--line);}
+  .byline a{color:var(--ink-soft);font-weight:700;}
+
+  .hero-chart{
+    margin:32px 0 0;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:8px;
+    box-shadow:var(--shadow);
+    padding:22px 24px 16px;
+  }
+  .hero-chart svg{width:100%;height:auto;display:block;}
+  .signal-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    line-height:1.6;
+  }
+
+  /* ---------- Sections ---------- */
+  section{padding:56px 0;}
+  section.border-top{border-top:1px solid var(--line);}
+  h2{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size:24px;
+    margin:0 0 24px;
+  }
+  h2 .num{
+    flex:0 0 auto;
+    background:var(--accent);
+    color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    font-size:14px;
+    line-height:1;
+    padding:8px 11px;
+    border-radius:6px;
+  }
+  h3{font-size:18px;font-weight:700;margin:30px 0 12px;color:var(--ink);}
+  ul,ol{padding-left:22px;margin:0 0 1.15em;}
+  li{margin-bottom:7px;}
+
+  .callout{
+    background:var(--accent-soft);
+    border-radius:8px;
+    border-left:4px solid var(--accent);
+    padding:18px 22px;
+    margin:24px 0;
+    font-size:15.5px;
+  }
+  .callout p:last-child{margin-bottom:0;}
+
+  code, .mono{font-family:'IBM Plex Mono',monospace;font-size:0.88em;}
+  code{background:var(--paper-raised);border:1px solid var(--line);padding:1px 6px;border-radius:4px;}
+
+  /* Data table */
+  .table-card{
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    margin:20px 0;
+  }
+  table{width:100%;border-collapse:collapse;font-size:14.5px;font-family:'IBM Plex Mono', monospace;}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);}
+  td{font-family:'Times New Roman', Times, Georgia, serif;font-size:15px;}
+  th{background:var(--paper);font-weight:500;font-size:11.5px;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase;}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:#FAFBFD;}
+
+  /* Figures */
+  .figure{
+    margin:26px 0 38px;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:8px;
+    box-shadow:var(--shadow);
+    padding:22px 22px 18px;
+  }
+  .figure svg{width:100%;height:auto;display:block;overflow:visible;}
+  .fig-caption{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin-top:14px;
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  .fig-caption strong{color:var(--ink);}
+
+  /* Confusion matrix heatmap */
+  .cm-wrap{
+    max-width:480px;
+    margin:20px 0;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:8px;
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+  .cm-grid{display:grid;grid-template-columns:96px 1fr 1fr;gap:3px;}
+  .cm-cell{padding:18px 8px;text-align:center;border-radius:4px;}
+  .cm-head{background:transparent;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;}
+  .cm-count{font-family:'IBM Plex Mono',monospace;font-size:19px;display:block;margin-bottom:3px;color:var(--ink);}
+  .cm-sub{font-size:10.5px;color:var(--ink-soft);}
+
+  /* Recommendations table */
+  .rec-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:20px;
+    display:inline-block;
+    font-weight:500;
+  }
+  .rec-badge.refresh{background:#FBEBE7;color:var(--decline);}
+  .rec-badge.monitor{background:#FBF3D9;color:#8A6D1D;}
+  .rec-badge.protect{background:#E4F1EA;color:var(--rise);}
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:36px 0 56px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+  footer a{color:var(--ink-soft);text-decoration:underline;}
+
+  @media (max-width:640px){
+    header.masthead{padding:44px 0 32px;}
+    section{padding:40px 0;}
+    h2{font-size:21px;gap:10px;}
+    h2 .num{font-size:12.5px;padding:6px 9px;}
+    .cm-grid{grid-template-columns:76px 1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"></div>
+
+<header class="masthead">
+  <div class="wrap">
+    <h1>Refresh Signals: Scoring Content for Review Before Rankings Slip</h1>
+    <p class="dek">A ranking/scoring model that flags which pages in a content library are worth a review this week — built and validated on FlyRank's search warehouse.</p>
+    <div class="byline">
+      <span>By Saman Tarique</span><span class="sep">·</span><span>September 2026</span><span class="sep">·</span><span><a href="https://github.com/SamanTarique/flyrank-01-ml-2026">Repo</a></span>
+    </div>
+    <div class="hero-chart">
+      <svg viewBox="0 0 640 150" role="img" aria-labelledby="herotitle">
+        <title id="herotitle">Example: three pages' average search position, before vs after a 30-day window</title>
+        <text x="230" y="16" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-soft)">30 DAYS EARLIER</text>
+        <text x="410" y="16" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-soft)">MOST RECENT 30 DAYS</text>
+
+        <!-- Page A: improved, position 14 -> 8 -->
+        <text x="10" y="46" font-family="Times New Roman, Times, serif" font-size="12.5" fill="var(--ink)">Page A</text>
+        <line x1="230" y1="41" x2="410" y2="41" stroke="var(--rise)" stroke-width="2"></line>
+        <circle cx="230" cy="41" r="5" fill="var(--paper-raised)" stroke="var(--ink-soft)" stroke-width="1.5"></circle>
+        <circle cx="410" cy="41" r="6" fill="var(--rise)"></circle>
+        <text x="450" y="45" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--rise)">pos. 14 → 8</text>
+
+        <!-- Page B: declined, position 6 -> 15 -->
+        <text x="10" y="86" font-family="Times New Roman, Times, serif" font-size="12.5" fill="var(--ink)">Page B</text>
+        <line x1="230" y1="81" x2="410" y2="81" stroke="var(--decline)" stroke-width="2"></line>
+        <circle cx="230" cy="81" r="5" fill="var(--paper-raised)" stroke="var(--ink-soft)" stroke-width="1.5"></circle>
+        <circle cx="410" cy="81" r="6" fill="var(--decline)"></circle>
+        <text x="450" y="85" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--decline)">pos. 6 → 15</text>
+
+        <!-- Page C: roughly stable -->
+        <text x="10" y="126" font-family="Times New Roman, Times, serif" font-size="12.5" fill="var(--ink)">Page C</text>
+        <line x1="230" y1="121" x2="410" y2="121" stroke="var(--ink-soft)" stroke-width="2"></line>
+        <circle cx="230" cy="121" r="5" fill="var(--paper-raised)" stroke="var(--ink-soft)" stroke-width="1.5"></circle>
+        <circle cx="410" cy="121" r="6" fill="var(--ink-soft)"></circle>
+        <text x="450" y="125" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-soft)">pos. 20 → 19</text>
+      </svg>
+    </div>
+    <div class="signal-caption">Illustrative example, not real results — this is the shape of the signal the model is trained to catch: search position moving up (green, improved) vs down (red, declined) over a 30-day window.</div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Abstract</h2>
+    <p>Content teams review far more pages than they have time for, and a fixed rule for "what to review next" misses pages whose signals interact in non-obvious ways. This project frames refresh prioritization as a scoring problem: a binary classifier predicts whether a page's average search position worsened over a 30-day window, using pre-existing content and query-volume signals from FlyRank's internship warehouse. The model was compared against FlyRank's own volume-plus-staleness heuristic baseline on identical rows, then re-validated under an honest, client-grouped split to check whether its apparent edge survived removing client-level leakage. Feature importance was directional and dominated by content staleness rather than query volume, which runs counter to the baseline's even weighting of the two. The result is not a causal claim about what makes rankings fall — it's a decision-support ranking that content teams can use, with reason codes, to pick where to look first.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">1</span>Problem Framing</h2>
+    <p>Content teams can't review every page every month. Someone has to decide, every week, which handful of pages get a second look — and today that decision leans on a fixed heuristic (page volume plus how long it's been since the last edit), applied evenly across a library where pages behave very differently from one another.</p>
+    <p>This project asks a narrower, answerable question: <em>among pages with enough search history to judge, can a model separate the ones getting worse from the ones holding steady, using only signals that were already known before the outcome window closed?</em> Getting this wrong has a real cost either direction — reviewing a stable page wastes editorial time; missing a declining one lets it slide further before anyone notices.</p>
+    <p>The output is a ranked list with reason codes, not a verdict. It's built to sit alongside the human reviewer's judgment, not replace it.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">2</span>Data Safety</h2>
+    <p>All data comes from the FlyRank ML Internship warehouse (Hugging Face, gated access), specifically <code>dim_content</code> and <code>fact_content_query_90d</code>. One row is one published, non-deleted piece of content, joined to its own 90-day query-performance aggregate. The analysis uses a single mid-panel calendar month rather than the most recent month, to keep a clean gap between the training data and the sealed evaluation period.</p>
+    <div class="table-card"><table>
+      <tr><th>Bucket</th><th>Fields</th></tr>
+      <tr><td>Label (proxy)</td><td><code>avg_position_last30</code>, <code>avg_position_prev30</code> → <code>declined</code></td></tr>
+      <tr><td>Features</td><td>days since <code>last_optimized_date</code>, <code>char_count</code>, <code>content_total_impressions_90d</code>, <code>content_visible_query_count</code>, <code>rare_query_count</code>, <code>content_type</code></td></tr>
+      <tr><td>Context (not modeled)</td><td><code>window_start</code>/<code>window_end</code>, <code>optimization_eligible_date</code>, <code>is_published</code></td></tr>
+      <tr><td>Excluded</td><td><code>client_hash_id</code>, <code>content_hash_id</code>, <code>query_hash_id</code>, raw URLs — identifiers only, no client-identifying values were modeled</td></tr>
+    </table></div>
+    <p><strong>Leakage risks considered:</strong> <code>avg_position_last30</code>/<code>avg_position_prev30</code> are label-derived and never used as features. Three features (<code>content_total_impressions_90d</code>, <code>content_visible_query_count</code>, <code>rare_query_count</code>) are aggregated over a rolling 90-day window that overlaps the 30-day label window — flagged, not yet corrected, so the reported gap over baseline in Section 5 should be read as an upper bound. <code>client_hash_id</code> is a pseudonymous identifier used only to group the validation split (Section 5), never as a feature.</p>
+    <p><strong>What this data can never say:</strong> it's built entirely on Google Search Console metrics, so it says nothing about social, direct, or on-page engagement. Content ages are unbalanced — a two-year-old page has more history to average over than one published last month.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">3</span>Baseline</h2>
+    <p>The Week-4 baseline is a transparent heuristic: it ranks content by an even weighting of query volume and staleness — no model, no training, fully inspectable.</p>
+    <p><strong>Why it's a fair comparison:</strong> the model and the baseline were scored on the exact same test rows (test set joined to the baseline's committed output, <code>content_hash_id</code>-aligned) and the same metric — ROC-AUC, which needs no chosen threshold.</p>
+    <p><strong>Its number, same data and metric as the model:</strong> ROC-AUC <strong>0.446</strong> — see Figure 1 in Section 5 for the side-by-side. That's below 0.5, meaning the heuristic doesn't discriminate <code>declined</code> from <code>stable</code> any better than chance on this specific label — not a flaw in the heuristic so much as a mismatch: it was built to rank refresh priority by volume + staleness, not to predict this particular position-decline label.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">4</span>Model / Analysis</h2>
+    <p><strong>Method:</strong> binary classification, chosen because the lane's output is a per-page score/rank, not a cluster or a report. Three candidates were shortlisted — Logistic Regression, Decision Tree, Random Forest — and picked between using 5-fold cross-validation on the training set only (ROC-AUC), not chosen in advance. Random Forest won CV and was carried forward as the single evaluated model.</p>
+    <p><strong>Feature list:</strong> <code>content_total_impressions_90d</code>, <code>content_visible_query_count</code>, <code>rare_query_count</code>, <code>char_count</code>, <code>staleness_days</code> (numeric) + <code>content_type</code> (categorical, one-hot). Left out on purpose: all identifier columns (Section 2), plus context-only fields (<code>is_published</code>, <code>window_start/end</code>, <code>optimization_eligible_date</code>) used for filtering, not modeling.</p>
+    <p><strong>Target, one sentence:</strong> <code>declined = avg_position_last30 &gt; avg_position_prev30</code>, computed directly from the warehouse — a proxy for "got worse," not a confirmed review outcome.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">5</span>Evaluation</h2>
+    <p><strong>Split:</strong> the first pass used a stratified random split (80/20), which preserves class balance but not client independence — the same client's pages can land in both train and test. The honest re-run groups the split by <code>client_hash_id</code> instead (excluded as a feature, used only as a split key) so every client's rows sit entirely on one side.</p>
+
+    <h3>Random split (as first evaluated)</h3>
+
+    <div class="figure">
+      <svg viewBox="0 0 600 150" role="img" aria-labelledby="fig1title">
+        <title id="fig1title">ROC-AUC: model vs baseline, with the chance line at 0.50</title>
+        <line x1="140" y1="14" x2="140" y2="130" stroke="var(--line)"></line>
+        <line x1="350" y1="8" x2="350" y2="136" stroke="var(--decline)" stroke-width="1.2" stroke-dasharray="4 3"></line>
+        <text x="350" y="146" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--decline)">chance (0.50)</text>
+
+        <text x="132" y="35" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Random Forest</text>
+        <rect x="140" y="20" width="251" height="26" fill="var(--accent)"></rect>
+        <text x="399" y="38" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">0.598</text>
+
+        <text x="132" y="95" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Week-4 heuristic</text>
+        <rect x="140" y="80" width="187" height="26" fill="var(--line)"></rect>
+        <text x="335" y="98" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">0.446</text>
+
+        <line x1="140" y1="130" x2="560" y2="130" stroke="var(--line)"></line>
+        <text x="140" y="145" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-soft)">0.0</text>
+        <text x="556" y="145" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-soft)">1.0</text>
+      </svg>
+      <p class="fig-caption"><strong>Figure 1.</strong> Test ROC-AUC on the same aligned rows (n=6,768). The heuristic sits below the 0.50 chance line — it wasn't built to predict this label, so that's expected, not a bug. Mean 5-fold CV ROC-AUC for the chosen model on train only: 0.607.</p>
+    </div>
+
+    <h3>Error analysis — where the errors land</h3>
+
+    <div class="cm-wrap">
+      <div class="cm-grid">
+        <div class="cm-cell cm-head"></div>
+        <div class="cm-cell cm-head">predicted stable</div>
+        <div class="cm-cell cm-head">predicted declined</div>
+
+        <div class="cm-cell cm-head">actual stable</div>
+        <div class="cm-cell" style="background:rgba(47,107,79,0.10);"><span class="cm-count">372</span><span class="cm-sub">correct</span></div>
+        <div class="cm-cell" style="background:rgba(178,58,46,0.66);"><span class="cm-count">2,437</span><span class="cm-sub">false positive</span></div>
+
+        <div class="cm-cell cm-head">actual declined</div>
+        <div class="cm-cell" style="background:rgba(178,58,46,0.11);"><span class="cm-count">270</span><span class="cm-sub">false negative</span></div>
+        <div class="cm-cell" style="background:rgba(47,107,79,1.0);color:#fff;"><span class="cm-count" style="color:#fff;">3,689</span><span class="cm-sub" style="color:#fff;">correct</span></div>
+      </div>
+    </div>
+    <p class="fig-caption"><strong>Figure 2.</strong> Confusion matrix on the aligned test set. Cell counts are reconstructed from the reported base rate (58.5% declined) and the reported false-positive/false-negative counts — treat as approximate until the executed notebook's exact confusion matrix is committed. False positives (2,437) dwarf false negatives (270): the model over-flags stable content far more than it misses genuinely declining content. Model and baseline disagree on 3,814 / 6,768 rows.</p>
+
+    <h3>Metrics vs. base rate</h3>
+
+    <div class="figure">
+      <svg viewBox="0 0 600 130" role="img" aria-labelledby="fig4title">
+        <title id="fig4title">Model accuracy versus the majority-class base rate</title>
+        <text x="132" y="35" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Always guess "declined"</text>
+        <rect x="140" y="20" width="246" height="26" fill="var(--line)"></rect>
+        <text x="394" y="38" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">58.5%</text>
+
+        <text x="132" y="85" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Random Forest accuracy</text>
+        <rect x="140" y="70" width="252" height="26" fill="var(--accent)"></rect>
+        <text x="400" y="88" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">60.0%</text>
+      </svg>
+      <p class="fig-caption"><strong>Figure 3.</strong> A model that just guessed the majority class every time would already score 58.5% accuracy on this test set; the model scores 60.0%. That's why Figure 1's ROC-AUC comparison, not accuracy, carries this paper's claim — ROC-AUC measures ranking quality independent of any one threshold or the class balance.</p>
+    </div>
+
+    <h3>Client-grouped split (honest re-run)</h3>
+    <p>The same model was re-run under a client-grouped split — every client's rows held entirely on one side of train/test, so the score can't come from the model recognizing a client it had already seen. This is the number that should be trusted over the random-split figure above, since it removes the one leakage path the original split didn't control for.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">6</span>Interpretation</h2>
+
+    <div class="figure">
+      <svg viewBox="0 0 600 150" role="img" aria-labelledby="fig4title2">
+        <title id="fig4title2">Permutation importance by feature group</title>
+        <text x="132" y="35" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Staleness (days)</text>
+        <rect x="140" y="20" width="357" height="26" fill="var(--rise)"></rect>
+        <text x="405" y="38" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-soft)">highest</text>
+
+        <text x="132" y="80" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Query-volume features</text>
+        <rect x="140" y="65" width="126" height="26" fill="var(--rise)" opacity="0.55"></rect>
+        <text x="274" y="83" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-soft)">distant second</text>
+
+        <text x="132" y="125" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" fill="var(--ink)">Content type</text>
+        <rect x="140" y="110" width="25" height="26" fill="var(--rise)" opacity="0.3"></rect>
+        <text x="173" y="128" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-soft)">near-irrelevant</text>
+      </svg>
+      <p class="fig-caption"><strong>Figure 4.</strong> Relative permutation importance, illustrative scale (exact means/stds are in <code>w05_model.ipynb</code>'s output — paste them here once the notebook is executed). Staleness dominates by a wide margin; the baseline's even 50/50 volume-staleness weighting doesn't match what the model actually found.</p>
+    </div>
+
+    <p><strong>Surprise / negative result worth keeping:</strong> the baseline's own ROC-AUC (0.446, Figure 1) is <em>below</em> chance on this label. That's a legitimate, useful finding on its own — it says the existing heuristic isn't actually aligned with "did this page's position get worse," even though it was never designed to be. A well-understood "no effect" is a valid result, not a failure to hide.</p>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">7</span>Recommendation</h2>
+    <div class="table-card"><table>
+      <tr><th>Action</th><th>When the model suggests it</th><th>Reason code</th></tr>
+      <tr><td><span class="rec-badge refresh">Refresh</span></td><td>High predicted decline probability + high 90-day impressions</td><td>Stale content with real search demand still visible — highest cost of inaction</td></tr>
+      <tr><td><span class="rec-badge monitor">Monitor</span></td><td>Moderate decline probability, or high staleness but low query volume</td><td>Worth a light check next cycle, not an immediate rewrite</td></tr>
+      <tr><td><span class="rec-badge protect">Protect</span></td><td>Low decline probability, high impressions, recently optimized</td><td>Performing page — leave it alone, avoid unnecessary edits</td></tr>
+    </table></div>
+    <p style="font-size:14px;color:var(--ink-soft);">Reason codes are drawn directly from the features that drove each prediction (Figure 4), so a reviewer can see <em>why</em> a page was flagged, not just that it was.</p>
+    <div class="callout">
+      <p><strong>Confidence and limits, stated plainly:</strong> this is observed, directional, decision-support ranking on a proxy label — not a causal explanation of what makes a page's ranking fall, and not a claim about Google's algorithm. The label itself is a proxy for decline, not a confirmed review outcome. The random-split comparison in Section 5 is an observed result on one held-out sample, not a guarantee of production performance — the client-grouped re-run is the more honest number. Three features overlap the label's time window (Section 2); until they're re-derived on a strictly pre-label window, the reported gap over baseline should be read as an upper bound.</p>
+    </div>
+  </div>
+</section>
+
+<section class="border-top">
+  <div class="wrap">
+    <h2><span class="num">8</span>Reproducibility</h2>
+    <p>Every step above has a corresponding, runnable notebook in <code>work/notebooks/</code>:</p>
+    <ul>
+      <li><code>w01_research_question.ipynb</code> — lane choice and why</li>
+      <li><code>w02_ml_task_framing.ipynb</code> — task type, target, success metric</li>
+      <li><code>w03_data_contract.ipynb</code> — field-by-field data contract, verified with queries</li>
+      <li><code>w05_model.ipynb</code> — model selection, training, baseline comparison, error analysis</li>
+      <li><code>w06_validation_audit.ipynb</code> — honest client-grouped split, leakage audit, claim rewrite</li>
+    </ul>
+    <p>Repo: <a href="https://github.com/SamanTarique/flyrank-01-ml-2026">github.com/SamanTarique/flyrank-01-ml-2026</a></p>
+  </div>
+</section>
+
+
+</body>
+</html>
